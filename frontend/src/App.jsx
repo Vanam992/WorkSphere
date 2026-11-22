@@ -1,7 +1,18 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 function App() {
+    const apiFetch = (url, options = {}) => {
+    const token = localStorage.getItem('worksphere_token')
+url = url.replace('http://localhost:5000', API_BASE_URL)
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+  }
     const [user, setUser] = useState(null)
   const [authMode, setAuthMode] = useState('login')
   const [authName, setAuthName] = useState('')
@@ -40,7 +51,9 @@ function App() {
     },
   ])
   useEffect(() => {
-  fetch('http://localhost:5000/api/employees')
+  if (!user) return
+
+  apiFetch('http://localhost:5000/api/employees')
     .then(response => response.json())
     .then(data => {
       if (data.length > 0) {
@@ -48,31 +61,38 @@ function App() {
       }
     })
     .catch(error => console.error('Error loading employees:', error))
-}, [])
+}, [user])
 useEffect(() => {
-  fetch('http://localhost:5000/api/attendance')
+  if (!user) return
+
+  apiFetch('http://localhost:5000/api/attendance')
     .then(response => response.json())
     .then(data => {
       setAttendanceRecords(data)
     })
     .catch(error => console.error('Error loading attendance:', error))
-}, [])
+}, [user])
 useEffect(() => {
-  fetch('http://localhost:5000/api/leave-requests')
+  if (!user) return
+
+  apiFetch('http://localhost:5000/api/leave-requests')
     .then(response => response.json())
     .then(data => {
       setLeaveRequests(data)
     })
     .catch(error => console.error('Error loading leave requests:', error))
-}, [])
+}, [user])
+
 useEffect(() => {
-  fetch('http://localhost:5000/api/projects')
+  if (!user) return
+
+  apiFetch('http://localhost:5000/api/projects')
     .then(response => response.json())
     .then(data => {
       setProjects(data)
     })
     .catch(error => console.error('Error loading projects:', error))
-}, [])
+}, [user])
 const [attendance, setAttendance] = useState({})
 const [attendanceRecords, setAttendanceRecords] = useState([])
 useEffect(() => {
@@ -117,7 +137,7 @@ const [projectFormData, setProjectFormData] = useState({
   try {
     const isEditing = editProjectId !== null
 
-    const response = await fetch(
+    const response = await apiFetch(
       isEditing
         ? `http://localhost:5000/api/projects/${editProjectId}`
         : 'http://localhost:5000/api/projects',
@@ -191,7 +211,7 @@ async function handleDeleteProject(id) {
   }
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `http://localhost:5000/api/projects/${id}`,
       {
         method: 'DELETE',
@@ -219,7 +239,7 @@ async function handleAddEmployee(e) {
     if (editIndex !== null) {
       const employee = employees[editIndex]
 
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/api/employees/${employee.id}`,
         {
           method: 'PUT',
@@ -242,7 +262,7 @@ async function handleAddEmployee(e) {
       setEmployees(updatedEmployees)
 
     } else {
-      const response = await fetch('http://localhost:5000/api/employees', {
+      const response = await apiFetch('http://localhost:5000/api/employees', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -292,7 +312,7 @@ async function handleDeleteEmployee(index) {
   try {
     const employee = employees[index]
 
-    const response = await fetch(
+    const response = await apiFetch(
       `http://localhost:5000/api/employees/${employee.id}`,
       {
         method: 'DELETE',
@@ -329,7 +349,7 @@ async function handleMarkAttendance(employee, status) {
     let savedRecord
 
     if (existingRecord) {
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/api/attendance/${existingRecord.id}`,
         {
           method: 'PUT',
@@ -346,7 +366,7 @@ async function handleMarkAttendance(employee, status) {
 
       savedRecord = { ...existingRecord, status }
     } else {
-      const response = await fetch('http://localhost:5000/api/attendance', {
+      const response = await apiFetch('http://localhost:5000/api/attendance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -443,7 +463,7 @@ const handleAuthSubmit = async (e) => {
   try {
     if (authMode === 'register') {
       const registerResponse = await fetch(
-        'http://localhost:5000/api/register',
+        `${API_BASE_URL}/api/register`,
         {
           method: 'POST',
           headers: {
@@ -465,7 +485,7 @@ const handleAuthSubmit = async (e) => {
     }
 
     const loginResponse = await fetch(
-      'http://localhost:5000/api/login',
+      `${API_BASE_URL}/api/login`,
       {
         method: 'POST',
         headers: {
@@ -1225,7 +1245,7 @@ if (!user) {
       e.preventDefault()
 
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           'http://localhost:5000/api/leave-requests',
           {
             method: 'POST',
@@ -1240,7 +1260,7 @@ if (!user) {
           throw new Error('Failed to submit leave request')
         }
 
-        const refreshResponse = await fetch(
+        const refreshResponse = await apiFetch(
           'http://localhost:5000/api/leave-requests'
         )
 
@@ -1374,7 +1394,7 @@ if (!user) {
   className="edit-btn"
   onClick={async () => {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/api/leave-requests/${request.id}`,
         {
           method: 'PUT',
@@ -1409,7 +1429,7 @@ if (!user) {
   className="delete-btn"
   onClick={async () => {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/api/leave-requests/${request.id}`,
         {
           method: 'PUT',
