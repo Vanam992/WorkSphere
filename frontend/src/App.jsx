@@ -356,7 +356,11 @@ async function handleMarkAttendance(employee, status) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ status }),
+          body: JSON.stringify({
+  employee_id: employee.id,
+  date: today,
+  status,
+}),
         }
       )
 
