@@ -108,8 +108,7 @@ useEffect(() => {
       )
 
       if (employee) {
-        todayAttendance[employee.name] = record.status
-      }
+todayAttendance[employee.id] = record.status      }
     }
   })
 
@@ -417,7 +416,7 @@ const handleExportReports = () => {
     ...employees.map(employee => [
       employee.name,
       employee.department,
-      attendance[employee.name] || 'Not Marked',
+      attendance[employee.id] || 'Not Marked',
     ]),
     [],
     ['PROJECT REPORT'],
@@ -836,10 +835,10 @@ if (!user) {
           <div className="stat-card">
             <div className="stat-icon green">◷</div>
             <p>Present Today</p>
-            <h2>{employees.filter(e => attendance[e.name] === 'Present').length}</h2>
+            <h2>{employees.filter(e => attendance[e.id] === 'Present').length}</h2>
 <span className="positive">
   {employees.length > 0
-    ? ((employees.filter(e => attendance[e.name] === 'Present').length / employees.length) * 100).toFixed(1)
+    ? ((employees.filter(e => attendance[e.id] === 'Present').length / employees.length) * 100).toFixed(1)
     : 0}% attendance
 </span>
           </div>
@@ -873,29 +872,29 @@ if (!user) {
               <div className="attendance-number">
                 <h1>
   {employees.length > 0
-    ? ((employees.filter(e => attendance[e.name] === 'Present').length / employees.length) * 100).toFixed(1)
+    ? ((employees.filter(e => attendance[e.id] === 'Present').length / employees.length) * 100).toFixed(1)
     : 0}%
 </h1>
                 <p>Attendance rate</p>
               </div>
               <div className="attendance-details">
-<div><span className="dot green-dot"></span> Present <strong>{employees.filter(e => attendance[e.name] === 'Present').length}</strong></div>
-<div><span className="dot orange-dot"></span> Late <strong>{employees.filter(e => attendance[e.name] === 'Late').length}</strong></div>
-<div><span className="dot red-dot"></span> Absent <strong>{employees.filter(e => attendance[e.name] === 'Absent').length}</strong></div>
+<div><span className="dot green-dot"></span> Present <strong>{employees.filter(e => attendance[e.id] === 'Present').length}</strong></div>
+<div><span className="dot orange-dot"></span> Late <strong>{employees.filter(e => attendance[e.id] === 'Late').length}</strong></div>
+<div><span className="dot red-dot"></span> Absent <strong>{employees.filter(e => attendance[e.id] === 'Absent').length}</strong></div>
               </div>
             </div>
 <div className="progress-bar">
   <div
     className="progress-present"
-    style={{ width: `${employees.length ? (employees.filter(e => attendance[e.name] === 'Present').length / employees.length) * 100 : 0}%` }}
+    style={{ width: `${employees.length ? (employees.filter(e => attendance[e.id] === 'Present').length / employees.length) * 100 : 0}%` }}
   ></div>
   <div
     className="progress-late"
-    style={{ width: `${employees.length ? (employees.filter(e => attendance[e.name] === 'Late').length / employees.length) * 100 : 0}%` }}
+    style={{ width: `${employees.length ? (employees.filter(e => attendance[e.id] === 'Late').length / employees.length) * 100 : 0}%` }}
   ></div>
   <div
     className="progress-absent"
-    style={{ width: `${employees.length ? (employees.filter(e => attendance[e.name] === 'Absent').length / employees.length) * 100 : 0}%` }}
+    style={{ width: `${employees.length ? (employees.filter(e => attendance[e.id] === 'Absent').length / employees.length) * 100 : 0}%` }}
   ></div>
 </div>
           </div>
@@ -941,17 +940,17 @@ if (!user) {
 <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
   <div style={{ flex: '1', minWidth: '150px', padding: '20px', background: '#e8f5e9', borderRadius: '10px' }}>
     <h3>Present</h3>
-    <h1>{employees.filter(e => attendance[e.name] === 'Present').length}</h1>
+    <h1>{employees.filter(e => attendance[e.id] === 'Present').length}</h1>
   </div>
 
   <div style={{ flex: '1', minWidth: '150px', padding: '20px', background: '#ffebee', borderRadius: '10px' }}>
     <h3>Absent</h3>
-    <h1>{employees.filter(e => attendance[e.name] === 'Absent').length}</h1>
+    <h1>{employees.filter(e => attendance[e.id] === 'Absent').length}</h1>
   </div>
 
   <div style={{ flex: '1', minWidth: '150px', padding: '20px', background: '#fff3e0', borderRadius: '10px' }}>
     <h3>Not Marked</h3>
-    <h1>{employees.filter(e => !attendance[e.name]).length}</h1>
+    <h1>{employees.filter(e => !attendance[e.id]).length}</h1>
   </div>
 </div>
 
@@ -1150,17 +1149,17 @@ if (!user) {
 <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
   <div style={{ flex: '1', minWidth: '150px', padding: '20px', background: '#e8f5e9', borderRadius: '10px' }}>
     <h3>Present</h3>
-    <h1>{employees.filter(e => attendance[e.name] === 'Present').length}</h1>
+    <h1>{employees.filter(e => attendance[e.id] === 'Present').length}</h1>
   </div>
 
   <div style={{ flex: '1', minWidth: '150px', padding: '20px', background: '#ffebee', borderRadius: '10px' }}>
     <h3>Absent</h3>
-    <h1>{employees.filter(e => attendance[e.name] === 'Absent').length}</h1>
+    <h1>{employees.filter(e => attendance[e.id] === 'Absent').length}</h1>
   </div>
 
   <div style={{ flex: '1', minWidth: '150px', padding: '20px', background: '#fff3e0', borderRadius: '10px' }}>
     <h3>Not Marked</h3>
-    <h1>{employees.filter(e => !attendance[e.name]).length}</h1>
+    <h1>{employees.filter(e => !attendance[e.id]).length}</h1>
   </div>
 </div>
     <section className="panel employees-panel">
@@ -1188,7 +1187,7 @@ if (!user) {
                 <td>{employee.name}</td>
                 <td>{employee.department}</td>
                 <td>
-                  {attendance[employee.name] || 'Not Marked'}
+                  {attendance[employee.id] || 'Not Marked'}
                 </td>
                 <td>
                   <button
@@ -1653,7 +1652,7 @@ if (!user) {
         borderRadius: '10px'
       }}>
         <h3>Present Today</h3>
-        <h1>{employees.filter(e => attendance[e.name] === 'Present').length}</h1>
+        <h1>{employees.filter(e => attendance[e.id] === 'Present').length}</h1>
       </div>
 
       <div style={{
@@ -1694,15 +1693,15 @@ if (!user) {
         {[
           {
             label: 'Present',
-            count: employees.filter(e => attendance[e.name] === 'Present').length,
+            count: employees.filter(e => attendance[e.id] === 'Present').length,
           },
           {
             label: 'Absent',
-            count: employees.filter(e => attendance[e.name] === 'Absent').length,
+            count: employees.filter(e => attendance[e.id] === 'Absent').length,
           },
           {
             label: 'Not Marked',
-            count: employees.filter(e => !attendance[e.name]).length,
+            count: employees.filter(e => !attendance[e.id]).length,
           },
         ].map(item => (
           <div key={item.label} style={{ marginBottom: '20px' }}>
@@ -1895,7 +1894,7 @@ if (!user) {
           <tr key={employee.id}>
             <td>{employee.name}</td>
             <td>{employee.department}</td>
-            <td>{attendance[employee.name] || 'Not Marked'}</td>
+            <td>{attendance[employee.id] || 'Not Marked'}</td>
           </tr>
         ))}
       </tbody>
