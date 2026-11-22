@@ -489,17 +489,6 @@ app.post('/api/attendance', authenticateToken, async (req, res) => {
     })
   }
 
-  const employeeResult = await pool.query(
-    'SELECT id FROM employees WHERE id = $1',
-    [Number(employee_id)]
-  )
-
-  if (employeeResult.rows.length === 0) {
-    return res.status(404).json({
-      error: 'Employee does not exist'
-    })
-  }
-
   if (!['Present', 'Absent'].includes(status)) {
     return res.status(400).json({
       error: 'Status must be Present or Absent'
@@ -517,18 +506,85 @@ app.post('/api/attendance', authenticateToken, async (req, res) => {
     })
   }
 
-  const result = await pool.query(`
-    INSERT INTO attendance (employee_id, date, status)
-    VALUES ($1, $2, $3)
-    RETURNING id
-  `, [Number(employee_id), date, status])
+  const client = await pool.connect()
+  let transactionStarted = false
 
-  res.status(201).json({
-    id: result.rows[0].id,
-    employee_id: Number(employee_id),
-    date,
-    status
-  })
+  try {
+    await client.query('BEGIN')
+    transactionStarted = true
+
+    await client.query(
+      'SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',
+      [`attendance:${Number(employee_id)}:${date}`]
+    )
+
+    const employeeResult = await client.query(
+      'SELECT id FROM employees WHERE id = $1',
+      [Number(employee_id)]
+    )
+
+    if (employeeResult.rows.length === 0) {
+      await client.query('ROLLBACK')
+      transactionStarted = false
+
+      return res.status(404).json({
+        error: 'Employee does not exist'
+      })
+    }
+
+    const existingResult = await client.query(`
+      SELECT id
+      FROM attendance
+      WHERE employee_id = $1 AND date = $2
+      ORDER BY id ASC
+      LIMIT 1
+      FOR UPDATE
+    `, [Number(employee_id), date])
+
+    let result
+    let created = false
+
+    if (existingResult.rows.length > 0) {
+      result = await client.query(`
+        UPDATE attendance
+        SET status = $1
+        WHERE id = $2
+        RETURNING id
+      `, [status, existingResult.rows[0].id])
+    } else {
+      result = await client.query(`
+        INSERT INTO attendance (employee_id, date, status)
+        VALUES ($1, $2, $3)
+        RETURNING id
+      `, [Number(employee_id), date, status])
+
+      created = true
+    }
+
+    await client.query('COMMIT')
+    transactionStarted = false
+
+    return res.status(created ? 201 : 200).json({
+      id: result.rows[0].id,
+      employee_id: Number(employee_id),
+      date,
+      status
+    })
+
+  } catch (error) {
+    if (transactionStarted) {
+      await client.query('ROLLBACK')
+    }
+
+    console.error('Attendance save error:', error)
+
+    return res.status(500).json({
+      error: 'Failed to save attendance'
+    })
+
+  } finally {
+    client.release()
+  }
 })
 app.put('/api/employees/:id', authenticateToken, async (req, res) => {
   const { name, email, department, role } = req.body || {}
