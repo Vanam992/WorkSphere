@@ -102,7 +102,7 @@ useEffect(() => {
   const todayAttendance = {}
 
   attendanceRecords.forEach(record => {
-    if (record.date === today) {
+    if (String(record.date).slice(0, 10) === today) {
       const employee = employees.find(
         item => Number(item.id) === Number(record.employee_id)
       )
@@ -341,7 +341,7 @@ async function handleMarkAttendance(employee, status) {
   const existingRecord = attendanceRecords.find(
     record =>
       Number(record.employee_id) === Number(employee.id) &&
-      record.date === today
+      String(record.date).slice(0, 10) === today
   )
 
   try {
@@ -398,7 +398,7 @@ async function handleMarkAttendance(employee, status) {
 
     setAttendance(previous => ({
       ...previous,
-      [employee.name]: status,
+      [employee.id]: status,
     }))
 
     alert('Attendance saved successfully!')
